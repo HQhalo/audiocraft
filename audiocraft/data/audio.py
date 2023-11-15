@@ -202,7 +202,7 @@ def audio_write(stem_name: tp.Union[str, Path],
                           stem_name=str(stem_name))
     if format == 'mp3':
         suffix = '.mp3'
-        flags = ['-f', 'mp3', '-c:a', 'libmp3lame', '-b:a', f'{mp3_rate}k']
+        flags = ['-f', 'mp3', '-c:a', 'libmp3lame', '-b:a', f'{mp3_rate}k', '-ar', '16000']
     elif format == 'wav':
         suffix = '.wav'
         flags = ['-f', 'wav', '-c:a', 'pcm_s16le']

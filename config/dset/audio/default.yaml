@@ -1,10 +1,10 @@
 # @package __global__
 
 datasource:
-  max_sample_rate: ???
-  max_channels: ???
+  max_sample_rate: 32000
+  max_channels: 1
 
-  train: ???
-  valid: ???
-  evaluate: ???
+  train: egs/zalo/train
+  valid: egs/zalo/val
+  evaluate: egs/zalo/val
   generate: null
