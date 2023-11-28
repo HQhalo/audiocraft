@@ -1,7 +1,7 @@
 # @package __global__
 
 classifier_free_guidance:
-  training_dropout: 0.3
+  training_dropout: 0.1
   inference_coef: 3.0
 
 attribute_dropout: {}
@@ -20,11 +20,9 @@ conditioners:
     t5:
       name: t5-base
       finetune: false
-      word_dropout: 0.3
+      word_dropout: 0.1
       normalize_text: false
 
 dataset:
   train:
-    merge_text_p: 0.25
-    drop_desc_p: 0.5
-    drop_other_p: 0.5
+    merge_text_p: 0

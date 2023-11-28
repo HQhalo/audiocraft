@@ -16,41 +16,42 @@ autocast_dtype: float16
 # with a total stride of 640 leading to 50 frames/s.
 # rvq.n_q=4, rvq.bins=2048, no quantization dropout
 # (transformer_lm card and n_q must be compatible)
-compression_model_checkpoint: //pretrained/facebook/encodec_32khz
+compression_model_checkpoint: //sig/c9ca89f6
 
 channels: 1
-sample_rate: 16000
+sample_rate: 32000
 
 deadlock:
-  use: true # deadlock detection
+  use: true  # deadlock detection
 
 dataset:
-  batch_size: 16
+  batch_size: 4 # 32 GPUs
   num_workers: 4
-  segment_duration: null
-  sample_on_weight: false # Uniform sampling all the way
-  sample_on_duration: false # Uniform sampling all the way
+  segment_duration: 10
+  min_segment_ratio: 1
+  sample_on_weight: false  # Uniform sampling all the way
+  sample_on_duration: false  # Uniform sampling all the way
+  train:
+    num_samples: 9500
   valid:
-    num_samples: null
+    num_samples: 500
   evaluate:
-    num_samples: null
+    batch_size: 32
+    num_samples: 100
   generate:
+    batch_size: 32
     num_samples: 1
 generate:
   lm:
-    prompted_samples: False
-    gen_gt_samples: True
     use_sampling: true
     top_k: 250
     top_p: 0.0
 
 optim:
-  epochs: 20
-  optimizer: adamw
-  lr: 1e-3
   updates_per_epoch: 1000
-  adam:
-    weight_decay: 0.01
+  epochs: 48
+  optimizer: dadam
+  lr: 1
   ema:
     use: true
     updates: 10

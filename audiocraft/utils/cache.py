@@ -115,7 +115,7 @@ class EmbeddingCache:
                 except Exception as exc:
                     logger.error('Error saving embed %s (%s): %r', cache, full_embed.shape, exc)
                 else:
-                    logger.info('New embed cache saved: %s (%s)', cache, full_embed.shape)
+                    # logger.info('New embed cache saved: %s (%s)', cache, full_embed.shape)
                     embed = self._extract_embed_fn(full_embed, x, idx)
             embeds.append(embed)
         embed = torch.stack(embeds, dim=0)

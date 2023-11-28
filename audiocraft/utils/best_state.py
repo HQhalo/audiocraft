@@ -78,4 +78,7 @@ class BestStateDictManager(flashy.state.StateDictSource):
     def load_state_dict(self, state: flashy.state.StateDict):
         for name, sub_state in state.items():
             for k, v in sub_state.items():
-                self.states[name][k].copy_(v)
+                if k in self.states[name]:
+                    self.states[name][k].copy_(v)
+                else:
+                    print(k)

@@ -1,7 +1,7 @@
 # @package __global__
 
 classifier_free_guidance:
-  training_dropout: 0.3
+  training_dropout: 0.1
   inference_coef: 3.0
 
 attribute_dropout:
@@ -33,12 +33,12 @@ conditioners:
       n_q: 12
       bins: 1024
       kmeans_iters: 50
-      text_p: 0.  # probability of using text embed at train time
-      cache_path: null
+      text_p: 0.5  # probability of using text embed at train time
+      cache_path: /home/ubuntu/cache/clap_embed_music
 
 dataset:
   joint_embed_attributes: [description]
   train:
-    merge_text_p: 0.25
+    merge_text_p: 0
     drop_desc_p: 0.5
     drop_other_p: 0.5

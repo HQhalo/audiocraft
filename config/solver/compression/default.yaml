@@ -108,19 +108,19 @@ mpd:
 
 # data hyperparameters
 dataset:
-  batch_size: 64
-  num_workers: 10
+  batch_size: 32
+  num_workers: 4
   segment_duration: 1
   train:
-    num_samples: 500000
+    num_samples: 95000
   valid:
-    num_samples: 10000
+    num_samples: 5000
   evaluate:
     batch_size: 32
-    num_samples: 10000
+    num_samples: 1000
   generate:
     batch_size: 32
-    num_samples: 50
+    num_samples: 1
     segment_duration: 10
 
 # solver hyperparameters
@@ -145,8 +145,8 @@ checkpoint:
 
 # optimization hyperparameters
 optim:
-  epochs: 200
-  updates_per_epoch: 2000
+  epochs: 5
+  updates_per_epoch: 1000
   lr: 3e-4
   max_norm: 0.
   optimizer: adam

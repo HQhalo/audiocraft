@@ -30,7 +30,7 @@ label:  # use this if you want twice the same exp, with a name.
 # logging parameters
 logging:
   level: INFO
-  log_updates: 10
+  log_updates: 25
   log_tensorboard: false
   log_wandb: false
 tensorboard:

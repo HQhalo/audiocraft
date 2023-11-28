@@ -10,7 +10,7 @@ defaults:
   - _self_
 
 autocast: false
-compression_model_checkpoint: //pretrained/debug_compression_model
+compression_model_checkpoint: //pretrained/dac_24khz
 transformer_lm:
   n_q: 4
   card: 400
@@ -25,7 +25,7 @@ codebooks_pattern:
   modeling: parallel
 
 channels: 1
-sample_rate: 32000
+sample_rate: 24000
 
 deadlock:
   use: false  # deadlock detection

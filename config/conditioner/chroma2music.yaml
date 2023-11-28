@@ -1,7 +1,7 @@
 # @package __global__
 
 classifier_free_guidance:
-  training_dropout: 0.2
+  training_dropout: 0.1
   inference_coef: 3.0
 
 attribute_dropout:
@@ -30,17 +30,17 @@ conditioners:
       match_len_on_eval: false
       eval_wavs: null
       n_eval_wavs: 100
-      cache_path: null
+      cache_path: /home/ubuntu/cache/chroma
   description:
     model: t5
     t5:
       name: t5-base
       finetune: false
-      word_dropout: 0.2
+      word_dropout: 0.1
       normalize_text: false
 
 dataset:
   train:
-    merge_text_p: 0.25
+    merge_text_p: 0.
     drop_desc_p: 0.5
     drop_other_p: 0.5

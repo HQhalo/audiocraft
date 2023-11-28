@@ -76,7 +76,7 @@ class MusicGen:
         self.device = next(iter(lm.parameters())).device
 
         self.generation_params: dict = {}
-        self.set_generation_params(duration=15)  # 15 seconds by default
+        self.set_generation_params(duration=10)  # 15 seconds by default
         self._progress_callback: tp.Optional[tp.Callable[[int, int], None]] = None
         if self.device.type == 'cpu':
             self.autocast = TorchAutocast(enabled=False)
@@ -140,7 +140,7 @@ class MusicGen:
     def set_generation_params(self, use_sampling: bool = True, top_k: int = 250,
                               top_p: float = 0.0, temperature: float = 1.0,
                               duration: float = 30.0, cfg_coef: float = 3.0,
-                              two_step_cfg: bool = False, extend_stride: float = 18):
+                              two_step_cfg: bool = False, extend_stride: float = 5):
         """Set the generation parameters for MusicGen.
 
         Args:
@@ -157,6 +157,8 @@ class MusicGen:
                 should we extend the audio each time. Larger values will mean less context is
                 preserved, and shorter value will require extra computations.
         """
+        print(extend_stride)
+        print( self.max_duration)
         assert extend_stride < self.max_duration, "Cannot stride by more than max generation duration."
         self.extend_stride = extend_stride
         self.duration = duration
