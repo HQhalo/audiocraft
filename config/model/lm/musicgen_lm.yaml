@@ -8,7 +8,7 @@ defaults:
 lm_model: transformer_lm
 
 codebooks_pattern:
-  modeling: musiclm
+  modeling: delay
   delay:
     delays: [0, 1, 2, 3]
     flatten_first: 0

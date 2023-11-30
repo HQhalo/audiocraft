@@ -25,19 +25,19 @@ deadlock:
   use: true  # deadlock detection
 
 dataset:
-  batch_size: 4 # 32 GPUs
+  batch_size: 16 # 32 GPUs
   num_workers: 4
   segment_duration: 10
   min_segment_ratio: 1
   sample_on_weight: false  # Uniform sampling all the way
   sample_on_duration: false  # Uniform sampling all the way
   train:
-    num_samples: 9500
+    num_samples: 9700
   valid:
-    num_samples: 500
+    num_samples: 300
   evaluate:
-    batch_size: 32
-    num_samples: 100
+    batch_size: 16
+    num_samples: 300
   generate:
     batch_size: 32
     num_samples: 1
@@ -49,13 +49,15 @@ generate:
 
 optim:
   updates_per_epoch: 1000
-  epochs: 48
+  epochs: 20
   optimizer: dadam
   lr: 1
   ema:
     use: true
     updates: 10
     device: cuda
+  adam:
+    weight_decay: 0.01
 
 logging:
   log_tensorboard: true

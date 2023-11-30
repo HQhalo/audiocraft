@@ -17,6 +17,7 @@ import flashy
 import torch
 import torchmetrics
 
+from ..frechet_audio_distance import FrechetAudioDistance
 from ..environment import AudioCraftEnvironment
 
 
@@ -163,7 +164,14 @@ class FrechetAudioDistanceMetric(torchmetrics.Metric):
         logger.info("Env for TF is %r", self.tf_env)
         self.reset(log_folder)
         self.add_state("total_files", default=torch.tensor(0.), dist_reduce_fx="sum")
-
+        
+        self.vggish = FrechetAudioDistance(
+            model_name="vggish",
+            sample_rate=16000,
+            use_pca=False, 
+            use_activation=False,
+            verbose=False
+        )
     def reset(self, log_folder: tp.Optional[tp.Union[Path, str]] = None):
         """Reset torchmetrics.Metrics state."""
         log_folder = Path(log_folder or tempfile.mkdtemp())
@@ -219,111 +227,10 @@ class FrechetAudioDistanceMetric(torchmetrics.Metric):
             except Exception as e:
                 logger.error(f"Exception occured when saving background files for FAD computation: {repr(e)} - {e}")
 
-    def _get_samples_name(self, is_background: bool):
-        return 'background' if is_background else 'tests'
-
-    def _create_embedding_beams(self, is_background: bool, gpu_index: tp.Optional[int] = None):
-        if is_background:
-            input_samples_dir = self.samples_background_dir
-            input_filename = self.manifest_background
-            stats_name = self.stats_background_dir
-        else:
-            input_samples_dir = self.samples_tests_dir
-            input_filename = self.manifest_tests
-            stats_name = self.stats_tests_dir
-        beams_name = self._get_samples_name(is_background)
-        log_file = self.tmp_dir / f'fad_logs_create_beams_{beams_name}.log'
-
-        logger.info(f"Scanning samples folder to fetch list of files: {input_samples_dir}")
-        with open(input_filename, "w") as fout:
-            for path in Path(input_samples_dir).glob(f"*.{self.format}"):
-                fout.write(f"{str(path)}\n")
-
-        cmd = [
-            self.python_path, "-m",
-            "frechet_audio_distance.create_embeddings_main",
-            "--model_ckpt", f"{self.model_path}",
-            "--input_files", f"{str(input_filename)}",
-            "--stats", f"{str(stats_name)}",
-        ]
-        if self.batch_size is not None:
-            cmd += ["--batch_size", str(self.batch_size)]
-        logger.info(f"Launching frechet_audio_distance embeddings main method: {' '.join(cmd)} on {beams_name}")
-        env = os.environ
-        if gpu_index is not None:
-            env["CUDA_VISIBLE_DEVICES"] = str(gpu_index)
-        process = subprocess.Popen(
-            cmd, stdout=open(log_file, "w"), env={**env, **self.tf_env}, stderr=subprocess.STDOUT)
-        return process, log_file
-
-    def _compute_fad_score(self, gpu_index: tp.Optional[int] = None):
-        cmd = [
-            self.python_path, "-m", "frechet_audio_distance.compute_fad",
-            "--test_stats", f"{str(self.stats_tests_dir)}",
-            "--background_stats", f"{str(self.stats_background_dir)}",
-        ]
-        logger.info(f"Launching frechet_audio_distance compute fad method: {' '.join(cmd)}")
-        env = os.environ
-        if gpu_index is not None:
-            env["CUDA_VISIBLE_DEVICES"] = str(gpu_index)
-        result = subprocess.run(cmd, env={**env, **self.tf_env}, capture_output=True)
-        if result.returncode:
-            logger.error(
-                "Error with FAD computation from stats: \n %s \n %s",
-                result.stdout.decode(), result.stderr.decode()
-            )
-            raise RuntimeError("Error while executing FAD computation from stats")
-        try:
-            # result is "FAD: (d+).(d+)" hence we remove the prefix with (d+) being one digit or more
-            fad_score = float(result.stdout[4:])
-            return fad_score
-        except Exception as e:
-            raise RuntimeError(f"Error parsing FAD score from command stdout: {e}")
-
-    def _log_process_result(self, returncode: int, log_file: tp.Union[Path, str], is_background: bool) -> None:
-        beams_name = self._get_samples_name(is_background)
-        if returncode:
-            with open(log_file, "r") as f:
-                error_log = f.read()
-                logger.error(error_log)
-            os._exit(1)
-        else:
-            logger.info(f"Successfully computed embedding beams on {beams_name} samples.")
-
-    def _parallel_create_embedding_beams(self, num_of_gpus: int):
-        assert num_of_gpus > 0
-        logger.info("Creating embeddings beams in a parallel manner on different GPUs")
-        tests_beams_process, tests_beams_log_file = self._create_embedding_beams(is_background=False, gpu_index=0)
-        bg_beams_process, bg_beams_log_file = self._create_embedding_beams(is_background=True, gpu_index=1)
-        tests_beams_code = tests_beams_process.wait()
-        bg_beams_code = bg_beams_process.wait()
-        self._log_process_result(tests_beams_code, tests_beams_log_file, is_background=False)
-        self._log_process_result(bg_beams_code, bg_beams_log_file, is_background=True)
-
-    def _sequential_create_embedding_beams(self):
-        logger.info("Creating embeddings beams in a sequential manner")
-        tests_beams_process, tests_beams_log_file = self._create_embedding_beams(is_background=False)
-        tests_beams_code = tests_beams_process.wait()
-        self._log_process_result(tests_beams_code, tests_beams_log_file, is_background=False)
-        bg_beams_process, bg_beams_log_file = self._create_embedding_beams(is_background=True)
-        bg_beams_code = bg_beams_process.wait()
-        self._log_process_result(bg_beams_code, bg_beams_log_file, is_background=True)
-
-    @flashy.distrib.rank_zero_only
-    def _local_compute_frechet_audio_distance(self):
-        """Compute Frechet Audio Distance score calling TensorFlow API."""
-        num_of_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
-        if num_of_gpus > 1:
-            self._parallel_create_embedding_beams(num_of_gpus)
-        else:
-            self._sequential_create_embedding_beams()
-        fad_score = self._compute_fad_score(gpu_index=0)
-        return fad_score
 
     def compute(self) -> float:
         """Compute metrics."""
-        assert self.total_files.item() > 0, "No files dumped for FAD computation!"  # type: ignore
-        fad_score = self._local_compute_frechet_audio_distance()
+        fad_score = self.vggish.score(self.samples_background_dir , self.samples_tests_dir)
         logger.warning(f"FAD score = {fad_score}")
         fad_score = flashy.distrib.broadcast_object(fad_score, src=0)
         return fad_score

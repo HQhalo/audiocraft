@@ -154,9 +154,6 @@ def augment_music_info_description(music_info: MusicInfo, merge_text_p: float = 
         logger.debug(f"Applying text augmentation on MMI info. description: {description}, metadata: {metadata_text}")
 
     if description is None:
-        print(music_info)
-        print(description)
-        print("=======")
         description = metadata_text if len(metadata_text) > 1 else None
     else:
         description = ". ".join([description.rstrip('.'), metadata_text])
@@ -217,7 +214,6 @@ class MusicDataset(InfoAudioDataset):
         self.drop_other_p = drop_other_p
         self.joint_embed_attributes = joint_embed_attributes
         self.paraphraser = None
-        print(f"Quag {merge_text_p}")
         if paraphrase_source is not None:
             self.paraphraser = Paraphraser(paraphrase_source, paraphrase_p)
 
@@ -238,6 +234,7 @@ class MusicDataset(InfoAudioDataset):
                     music_info, self.merge_text_p, self.drop_desc_p, self.drop_other_p)
         else:
             music_info = MusicInfo.from_dict(info_data, fields_required=False)
+
         music_info.self_wav = WavCondition(
             wav=wav[None], length=torch.tensor([info.n_frames]),
             sample_rate=[info.sample_rate], path=[info.meta.path], seek_time=[info.seek_time])

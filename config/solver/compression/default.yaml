@@ -112,9 +112,9 @@ dataset:
   num_workers: 4
   segment_duration: 1
   train:
-    num_samples: 95000
+    num_samples: 97000
   valid:
-    num_samples: 5000
+    num_samples: 3000
   evaluate:
     batch_size: 32
     num_samples: 1000
@@ -145,7 +145,7 @@ checkpoint:
 
 # optimization hyperparameters
 optim:
-  epochs: 5
+  epochs: 3
   updates_per_epoch: 1000
   lr: 3e-4
   max_norm: 0.

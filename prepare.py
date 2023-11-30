@@ -12,11 +12,13 @@ from text_nor import text_nor
 import torchaudio
 
 # python -m audiocraft.data.audio_dataset /home/ubuntu/data/train/audio /home/ubuntu/data/train/data.jsonl
-# python -m audiocraft.data.audio_dataset /home/ubuntu/data/music_caps /home/ubuntu/data/music_caps.jsonl
+# python -m audiocraft.data.audio_dataset /home/ubuntu/data/music_com /home/ubuntu/data/music_caps.jsonl
 # python -m audiocraft.data.audio_dataset /home/ubuntu/data/chunk_zing_cap/audio /home/ubuntu/data/chunk_zing_cap/data.jsonl
 
 # chroma2music
 #  text2music
+# clapemb2music
+
 # dora run solver=musicgen/musicgen_base_32khz model/lm/model_scale=small conditioner=text2music continue_from=//pretrained/facebook/musicgen-small
 #continue_from=//pretrained/facebook/musicgen-small
 # dora run solver=compression/encodec_musicgen_32khz continue_from=//pretrained/facebook/encodec_32khz
@@ -35,17 +37,20 @@ def zalo_cap():
     trainMeta = json.load(f)
 
     dataset_path = "/home/ubuntu/data/train/audio/"
+    audiofiles = set(os.listdir(dataset_path))
     for audio in tqdm(trainMeta):
+        if audio not in audiofiles:
+            continue
         fileName = dataset_path +audio.replace("mp3", "json")
         audiofile =  audio
         metadata = torchaudio.info(os.path.join(dataset_path, audiofile))
 
         entry = {
                 "key": "",
-                "artist": audiofile.replace(".mp3", ""),
+                "artist": text_nor(audiofile.replace(".mp3", "")),
                 "sample_rate": metadata.sample_rate,
                 "file_extension": "mp3",
-                "description": text_nor(trainMeta[audio]),
+                "description": trainMeta[audio],
                 "keywords": "",
                 "duration": metadata.num_frames/metadata.sample_rate,
                 "bpm": "",
@@ -64,7 +69,7 @@ def music_cap():
     f = open("/home/ubuntu/data/music_com.json")
     trainMeta = json.load(f)
 
-    dataset_path = "/home/ubuntu/data/music_caps/"
+    dataset_path = "/home/ubuntu/data/music_com/"
     for audio in tqdm(trainMeta):
         fileName = dataset_path +audio.replace("mp3", "json")
         audiofile =  audio
@@ -131,21 +136,19 @@ def create_dataset():
     for line in lines:
         metaData += [json.loads(line)]
 
-
-   
-    # fmusic = open("/home/ubuntu/data/music_caps.jsonl")
-    # lines = fmusic.readlines()
-    # for line in lines:
-    #     metaData += [json.loads(line)]
+    train, val = train_test_split(metaData, test_size=0.03, random_state=42)
+    os.makedirs("/home/ubuntu/code/audiocraft/egs/onl/val", exist_ok=True)
+    os.makedirs("/home/ubuntu/code/audiocraft/egs/onl/train", exist_ok=True)
 
     # fzing= open("/home/ubuntu/data/chunk_zing_cap/data.jsonl")
     # lines = fzing.readlines()
     # for line in lines:
-    #     metaData += [json.loads(line)]
+    #     train += [json.loads(line)]
 
-    train, val = train_test_split(metaData, test_size=0.05, random_state=42)
-    os.makedirs("/home/ubuntu/code/audiocraft/egs/onl/val", exist_ok=True)
-    os.makedirs("/home/ubuntu/code/audiocraft/egs/onl/train", exist_ok=True)
+    # fmusic = open("/home/ubuntu/data/music_caps.jsonl")
+    # lines = fmusic.readlines()
+    # for line in lines:
+    #     train += [json.loads(line)]
 
     with open("/home/ubuntu/code/audiocraft/egs/onl/train/data.jsonl", "w") as outfile:
         for l in train:

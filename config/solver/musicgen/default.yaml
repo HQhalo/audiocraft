@@ -53,7 +53,7 @@ metrics:
     use_gt: false
     model: tf
     tf:
-      bin: null  # path to local frechet_audio_distance code
+      bin: /home/ubuntu/code/google-research
       model_path: //reference/fad/vggish_model.ckpt
   kld:
     use_gt: false
@@ -64,8 +64,7 @@ metrics:
     use_gt: false
     model: clap
     clap:
-      model_path: //reference/clap/music_audioset_epoch_15_esc_90.14.pt
-      model_arch: 'HTSAT-base'
+      model_path: //reference/clap/630k-audioset-best.pt
       enable_fusion: false
   chroma_cosine:
     use_gt: false
@@ -98,13 +97,13 @@ generate:
     top_k: 0
     top_p: 0.0
 evaluate:
-  every: 25
+  every: 3
   num_workers: 5
   metrics:
     base: false
-    fad: false
+    fad: true
     kld: false
-    text_consistency: false
+    text_consistency: true
     chroma_cosine: false
 
 checkpoint:

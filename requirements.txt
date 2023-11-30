@@ -9,11 +9,11 @@ num2words
 numpy
 sentencepiece
 spacy==3.5.2
-torch==2.0.1
+torch>=2.0.0
 torchaudio>=2.0.0
 huggingface_hub
 tqdm
-transformers>=4.31.0  # need Encodec there.
+transformers==4.31.0  # need Encodec there.
 xformers==0.0.22
 demucs
 librosa
@@ -21,4 +21,3 @@ gradio
 torchmetrics
 encodec
 protobuf
-jupyterlab==4.0.9
