@@ -21,3 +21,5 @@ gradio
 torchmetrics
 encodec
 protobuf
+jupyterlab
+resampy
