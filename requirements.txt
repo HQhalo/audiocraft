@@ -23,3 +23,4 @@ encodec
 protobuf
 jupyterlab
 resampy
+laion_clap
